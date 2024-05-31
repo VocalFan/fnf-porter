@@ -2,7 +2,7 @@ import json
 from luaparser import ast
 from luaparser.astnodes import Function, Call, String, Number, Name, UMinusOp, FalseExpr, TrueExpr
 import logging
-import psychtobase.src.tools.StageTool as StageTool
+import src.tools.StageTool as StageTool
 
 def parseStage(lua_script_path):
     lua_script = open(lua_script_path, 'r').read()
@@ -12,7 +12,7 @@ def parseStage(lua_script_path):
 
     calls = {}
 
-    allowedMethods = ['makeLuaSprite', 'makeAnimatedLuaSprite', 'addAnimationByPrefix', 'addLuaSprite']
+    allowedMethods = ['makeLuaSprite', 'setScrollFactor', 'scaleObject', 'makeAnimatedLuaSprite', 'addAnimationByPrefix', 'addLuaSprite']
     allowedFuncs = ['onCreate', 'onCreatePost']
 
     # Note: addLuaSprite only checks for if a character is after the characters!
@@ -28,39 +28,45 @@ def parseStage(lua_script_path):
                     logging.error(f'Couldn\'t get the current Function name: {e}')
             else:
                 curFunc = None
-            if calls.get(curFunc, None) == None:
+
+            if not curFunc in calls:
                 calls[curFunc] = {}
 
         if isinstance(node, Call):
             try:
                 if node.func.id in allowedMethods and curFunc in allowedFuncs:
                     arguments = [node.func.id]
+
                 for arg in node.args:
                     #idk what this used to do but i know how to make switch cases so
                     #hopefully it does the same thing
                     try:
-                        if isinstance(arg, String):
-                            arguments.append(arg.s)
-                        elif isinstance(arg, Number):
-                            arguments.append(arg.n)
-                        elif isinstance(arg, Name):
-                            arguments.append(arg.id)
-                        elif isinstance(arg, UMinusOp):
-                            arguments.append('-' + str(arg.operand.n))
-                        elif isinstance(arg, FalseExpr):
-                            arguments.append(False)
-                        elif isinstance(arg, TrueExpr):
-                            arguments.append(True)
-                        else:
-                            logging.warn(f'Unsupported type of lua node: {type(arg)}')
+                        match(type(arg)):
+                            case ast.String:
+                                arguments.append(arg.s)
+                            case ast.Number:
+                                arguments.append(arg.n)
+                            case ast.Name:
+                                arguments.append(arg.id)
+                            case ast.UMinusOp:
+                                arguments.append('-' + str(arg.operand.n))
+                            case ast.FalseExpr:
+                                arguments.append(False)
+                            case ast.TrueExpr:
+                                arguments.append(True)
+                            case _:
+                                logging.warn(f'Unsupported type of lua node: {type(arg)}')
+
                     except Exception as e:
                         logging.error(f'Could not append arguments of this call: {e}')
-                if calls[curFunc].get(node.func.id, None) == None:
+
+                if not node.func.id in calls[curFunc]:
                     calls[curFunc][node.func.id] = []
-                
+
                 calls[curFunc][node.func.id].append(arguments)
+
             except Exception as e:
-                logging.error(f'Failed to asign arguments of this call: {e}')
+                logging.error(f'Failed to assign arguments of this call: {e}')
 
     #print(f'{calls}')
 

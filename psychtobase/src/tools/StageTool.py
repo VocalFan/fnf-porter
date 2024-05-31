@@ -1,7 +1,7 @@
 import copy
 import logging
-import psychtobase.src.Constants as Constants
-import psychtobase.src.window as window
+import src.Constants as Constants
+import src.window as window
 
 def convert(stageJSON, assetName, luaProps):
     stageTemplate = copy.deepcopy(Constants.STAGE)
@@ -30,22 +30,26 @@ def getProps(parentFunc, parentFuncName, luaFilename):
         sprite = pictureProp[2]
 
         # Why do I have to add a try except for everything
-        posx = 0
-        posy = 0
+        pos = [0.0, 0.0]
+        scale = [1.0, 1.0]
+        scroll = [1.0, 1.0]
 
         try:
-            posx = pictureProp[3]
-            posy = pictureProp[4]
+            pos = [float(pictureProp[3]), float(pictureProp[4])]
         except:
             logging.error(f'[{luaFilename}] Failed accessing x and y of prop! Did you check if it is defined?')
 
-        call = pictureProp[0]
+        for func in parentFunc.get('scaleObject', []):
+            if func[1] == tag:
+                scale = [float(func[2]), float(func[3])]
+                break
+        
+        for func in parentFunc.get('setScrollFactor', []):
+            if func[1] == tag:
+                scroll = [float(func[2]), float(func[3])]
+                break
 
-        z_index = 0 
-        if parentFuncName == 'onCreatePost':
-            z_index = index
-        else:
-            z_index = -len(propArr) + index
+        call = pictureProp[0]
 
         animated = False
         if call == 'makeAnimatedLuaSprite':
@@ -54,11 +58,13 @@ def getProps(parentFunc, parentFuncName, luaFilename):
         _props.append({
             't': tag, # Tag
             's': sprite, # Sprite
-            'x': posx, # X
-            'y': posy, # Y
-            'z': z_index, # Z index
+            'x': pos[0], # X
+            'y': pos[1], # Y
+            'z': 0, # Z index
             'a': animated, # Animated
-            'as': [] # Animations
+            'as': [], # Animations
+            'scale': scale, # Scale
+            'scroll': scroll # Scroll
         })
 
     for animationAdd in parentFunc.get('addAnimationByPrefix', []):
@@ -75,31 +81,22 @@ def getProps(parentFunc, parentFuncName, luaFilename):
 
         for prop in _props:
             if prop['t'] == tag:
-                thisProp = prop
-
-                thisProp['as'].append({
+                prop['as'].append({
                     'an': animName,
                     'p': prefix,
                     'f': fps,
                     'l': loop
                 })
         
-    for addProp in parentFunc.get('addLuaSprite', []):
-        thisProp = None
+    addSpriteOrder = [addProp[1] for addProp in parentFunc.get('addLuaSprite', [])]
 
-        tag = addProp[1]
-        afterChars = False
-        if len(addProp) > 2:
-            afterChars = addProp[2]
-
+    for i, tag in enumerate(addSpriteOrder):
         for prop in _props:
             if prop['t'] == tag:
-                thisProp = prop
-
-        if thisProp:
-            if afterChars:
-                newZ = int(thisProp['z']) + 300
-                thisProp['z'] = newZ
+                if len(parentFunc.get('addLuaSprite', [])[i]) > 2 and parentFunc.get('addLuaSprite', [])[i][2]:
+                    prop['z'] = 300 + i
+                else:
+                    prop['z'] = i - len(addSpriteOrder)
 
     return _props
 
@@ -113,6 +110,8 @@ def toFNFProps(props):
         posY = prop['y']
         posZ = prop['z']
         animations = prop['as']
+        scale = prop['scale']
+        scroll = prop['scroll']
 
         _prop_template = None
         
@@ -126,19 +125,19 @@ def toFNFProps(props):
 
             _prop_template['name'] = name
             _prop_template['assetPath'] = assetPath
-            _posX = 0
             _posY = 0
 
             try:
-                #Should probably have these as a prompt in the future
-                _posX = float(posX) - 1000
+                #Should probably have this as a prompt in the future
                 _posY = float(posY) - 720
             except Exception as e:
-                logging.error(f'Error converting x and y values: {e}')
+                logging.error(f'Error converting y value: {e}')
 
-            _prop_template['position'][0] = _posX
+            _prop_template['position'][0] = posX
             _prop_template['position'][1] = _posY
             _prop_template['zIndex'] = posZ
+            _prop_template['scale'] = scale
+            _prop_template['scroll'] = scroll
 
             if animated:
                 for animation in animations:
@@ -149,10 +148,11 @@ def toFNFProps(props):
                     name = animation['an']
                     prefix = animation['p']
 
-                    _animation_template['frameRate'] = fps
-                    _animation_template['looped'] = loop
-                    _animation_template['name'] = name
-                    _animation_template['prefix'] = prefix
+                    # Best ensure data type is correct or stage fails to load.
+                    _animation_template['frameRate'] = int(fps)
+                    _animation_template['looped'] = bool(loop)
+                    _animation_template['name'] = str(name)
+                    _animation_template['prefix'] = str(prefix)
 
                     _prop_template['animations'].append(_animation_template)
 

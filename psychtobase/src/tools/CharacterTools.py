@@ -2,8 +2,8 @@ import json
 import logging
 import copy
 from pathlib import Path
-from psychtobase.src import window, Constants
-from psychtobase.src import files
+from src import window, Constants
+from src import files
 
 class CharacterObject:
 	def __init__(self, path: str, resultPath) -> None:
@@ -11,13 +11,16 @@ class CharacterObject:
 		self.resultPath = resultPath
 		self.pathName:str = path
 		self.psychChar = {}
-		self.character:dict = Constants.CHARACTER.copy()
+		self.character:dict = copy.deepcopy(Constants.CHARACTER)
 		self.characterName:str = None
+
+		self.iconID:str = None
 
 		self.loadCharacter()
 
 	def loadCharacter(self):
-		self.psychChar = json.loads(open(self.pathName, 'r').read())
+		with open(self.pathName, 'r') as file:
+			self.psychChar = json.load(file)
 		self.characterJson = files.removeTrail(self.charName)
 
 	def convert(self):
@@ -29,9 +32,11 @@ class CharacterObject:
 		self.character['name'] = englishCharacterName
 		self.character['assetPath'] = char['image']
 		self.character['singTime'] = char['sing_duration']
-		self.character['scale'] = char['scale']
+		# Disable scaling. Look at https://github.com/FunkinCrew/Funkin/issues/2543 for why this exists.
+		# self.character['scale'] = char['scale']
 		self.character['isPixel'] = char['scale'] >= 6
 		self.character['healthIcon']['id'] = char['healthicon']
+		self.iconID = char['healthicon']
 		self.character['healthIcon']['isPixel'] = char['scale'] >= 6
 		self.character['flipX'] = char.get('flip_x', False)
 
@@ -42,6 +47,8 @@ class CharacterObject:
 			animTemplate['name'] = animation['anim']
 			animTemplate['prefix'] = animation['name']
 			animTemplate['offsets'] = animation['offsets']
+			animTemplate['frameRate'] = animation['fps']
+			animTemplate['frameIndices'] = animation['indices']
 
 			logging.info(f'[{englishCharacterName}] Converting animation {animation}')
 			#note to remove this later
@@ -49,6 +56,7 @@ class CharacterObject:
 			self.character['animations'].append(animTemplate)
 
 		logging.info(f'Character {englishCharacterName} successfully converted')
+		self.characterName = englishCharacterName
 
 	def save(self):
 		savePath = Path(self.resultPath) / self.characterJson

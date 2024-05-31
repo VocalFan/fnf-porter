@@ -3,11 +3,16 @@ A module full of templates needed for mod conversion.
 """
 
 DEFAULT_OPTIONS = {
-  'charts': False,
-  'songs': {
+  'charts': {
+    'songs': False,  # Chart supremacy!
+    'events': False
+  },
+  'songs': { # Technically "audios", but whatever
     'inst': False,
     'voices': False,
-    'split': False
+    'split': False,
+    'music': False,
+    'sounds': False
   },
   'characters': {
     'icons': False,
@@ -33,6 +38,8 @@ STAGES = {
 CHARACTERS = {
 	"pico-player": "pico-playable"
 }
+
+## templates begin here
 
 BASE_CHART_METADATA = {
 	"version": "2.2.0",
@@ -67,7 +74,7 @@ BASE_CHART_METADATA = {
 
 	"timeFormat": "ms",
 	"timeChanges": [],
-	"generatedBy": "FNF Porter (by Gusborg, tposejank, and BombasticTom)"
+	"generatedBy": "FNF Porter (by Gusborg, tposejank, BombasticTom & VocalFan)"
 }
 
 BASE_CHART = {
@@ -75,7 +82,15 @@ BASE_CHART = {
 	"scrollSpeed": {},
 	"events": [],
 	"notes": {},
-	"generatedBy": "FNF Porter (by Gusborg, tposejank, and BombasticTom)"
+	"generatedBy": "FNF Porter (by Gusborg, tposejank, BombasticTom & VocalFan)"
+}
+
+BASE64_IMAGES = {
+  #to view these: https://base64.guru/converter/decode/image/png
+  "windowIcon": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABABAMAAABYR2ztAAAAFVBMVEX/////3fv/fdtsPpT/LDdYtf8AKUvOkdnQAAAACXBIWXMAAC4jAAAuIwF4pT92AAABRUlEQVRIx73UQbLCIAwAUJzWvf03EC/gNBdgEfcuLDco9z/CB0JLgQDq/PlZ1clrkoZWIf4mTpcemLpg6oKpCy490BZTT5wm2QWyOWgf/Eh5bTUBC1oCQLqoN4HZA1sC7lx+oHwd3GQIC4ArIPe4fgnmKHgA8iC+AAPA3AOxxA24Pb8B5j1/bwJ75QAiqgzAlrdgREzFDoAAYiYGHmABgMCIRQlaFeUhjIDLsjzfB1ufDTwWime5D/eUW9oGcyqiCXzwYORBHCJuRZxDUtfAljcpULGA8cDUgLCp1RVY0yExTqrdzXpdPgVWjCo8hBUmA8KfLgagjS6AL+EQPaLhAPoyfk8mzKCSHvQWVUF4UcIqCLyUKAQtW9O6UYlcqHgYLDiepu2QA/p9jvlPAXXYwev4cSVBIv36sgj314Eo/wJ4If4nfgHb6rE0etNCVQAAAABJRU5ErkJggg==",
+  "missingWeek": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAYAQMAAACGM+yfAAAAA1BMVEX///+nxBvIAAAACXBIWXMAAAsSAAALEgHS3X78AAAADElEQVQI12NgGBoAAACoAAHA+4ZOAAAAAElFTkSuQmCC",
+  "missingModImage": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABAAQMAAACQp+OdAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAAsSAAALEgHS3X78AAAAyUlEQVQoz2NgoBlghlAGDMwz0BnsSAwmdIYF838w40YN8/8DQAYbkCH/4AOQ8cOHmefjDiCjAsgoltzAwFKRw8xjLG3AwCJRw8xgPBvIYLBgBDMg4PcGKKP4A5TB+IEINwMZzZhCMJ0gZ4GNapY9+AHC4Dn8xwbCeNxTbwdi8D3mO2wPZhTzNZeDGGxARnIDiGHc1w5hGN77Xw9mGPyrrwepYWAoswe6nbGJgYGNzQLIAAYKGx/IQKDpEjx8EIb8D6hL+H8wDDAAAEa9OlI0tsK2AAAAAElFTkSuQmCC",
+  "errorIcon": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgAQMAAABJtOi3AAAABlBMVEX/////ADNUioaFAAAACXBIWXMAAC4jAAAuIwF4pT92AAAAeklEQVQI1zWOsQ3DMAwEX1AhF0bUJkBgruEqWkywvVk0ikZQ6ULQm3SQ5vAAn+QB0gGQBxxZEMiGSJ54GZ7kG6v0BVm6IMeWsHnFcGUHUQhdUlT/R7tTsIGlwymc9oavO7ZQE3KoduqM+Eh/YEljhnwV+nf6GdwuZnUBR3pJi8fgcMIAAAAASUVORK5CYII="
 }
 
 CHARACTER = {
@@ -97,7 +112,9 @@ CHARACTER = {
 ANIMATION = {
 	"name": None,
 	"prefix": None,
-	"offsets": [0, 0]
+	"offsets": [0, 0],
+  "frameRate": 24,
+  "frameIndices": []
 }
 
 LEVEL_PROP_DEFAULTS = {
@@ -304,7 +321,7 @@ STAGE_PROP_ANIMATED = {
     "animType": "sparrow",
     "name": "", # Psych Engine TAG
     "isPixel": False,
-    "startingAnimation": "idle",
+    "startingAnimation": "Idle",
     "assetPath": "stage assets/Road",
     "scroll": [1, 1],
     "animations": []
@@ -374,6 +391,12 @@ FILE_LOCS = {	# If the indent fucks up again its GitHub's fault
     'SONGS':
     ['/songs/','/songs/'],
 
+    'SOUNDS':
+    ['/sounds/', '/sounds/'],
+
+    'MUSIC':
+    ['/music/', '/music/'],
+
     'WEEKS':
     ['/weeks/','/data/levels/'],
 
@@ -383,8 +406,8 @@ FILE_LOCS = {	# If the indent fucks up again its GitHub's fault
     'WEEKCHARACTERJSON': 
     ['/images/menucharacters/',	  ''], # Embedded directly to the level.json
 
-    'WEEKIMAGE':
-    ['/images/storymenu/','/images/storymenu/titles/'],
+    'WEEKIMAGE': 
+    ['/images/storymenu/', '/images/storymenu/titles/'],
 
     'WEEKIMAGE_WEEKJSON':
     ['', 'storymenu/titles/'],
@@ -397,4 +420,9 @@ FILE_LOCS = {	# If the indent fucks up again its GitHub's fault
     
     'FREEPLAYICON':
     ['/images/icons/','/images/freeplay/icons'],
+
+    'SCRIPTS_DIR':
+    ['/scripts/', '/scripts/'] # Do we need this? YES!
 }
+
+VERSION = "0.2"
